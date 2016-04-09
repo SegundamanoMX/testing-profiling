@@ -10,6 +10,8 @@ type Factorial struct {
 	Value      int64
 }
 
+const DEBUG bool = false
+
 /*
 * TODO: A factorial using cache
  */
@@ -20,7 +22,9 @@ func (f *Factorial) ServeCached() {
 func (f *Factorial) ServeIterative() {
 	f.Result = 1
 	for i := f.Value; i > 0; i = i - 1 {
-		fmt.Println("i:", i, " val:", f.Value, " res: ", f.Result)
+		if DEBUG {
+			fmt.Println("i:", i, " val:", f.Value, " res: ", f.Result)
+		}
 		f.Result = f.Result * i
 	}
 	f.ResultChan <- f.Result
@@ -32,7 +36,9 @@ func (f *Factorial) ServeRecursive() {
 }
 
 func recursive(val int64) int64 {
-	fmt.Println("val:", val)
+	if DEBUG {
+		fmt.Println("val:", val)
+	}
 	if val < 2 {
 		return 1
 	} else {
