@@ -1,21 +1,21 @@
 package factorial
 
 import (
-    "fmt"
+	"fmt"
 	"testing"
 )
 
 func TestRecursiveSmallNumber(t *testing.T) {
 
 	fmt.Println("Test Recursive small number (10)")
-    var expected int64
+	var expected int64
 	fact := Factorial{Value: 10}
-    go fact.ServeRecursive()
+	go fact.ServeRecursive()
 	var channel chan int64
 	channel = make(chan int64)
 	fact.ResultChan = channel
 	res := <-channel
-    expected = 3628800
+	expected = 3628800
 	if res != expected {
 		t.Errorf("expected\n%s\n,got:\n%s", expected, res)
 	}
@@ -24,31 +24,30 @@ func TestRecursiveSmallNumber(t *testing.T) {
 func TestRecursiveBigNumber(t *testing.T) {
 
 	fmt.Println("Test Recursive big number (25)")
-    var expected int64
+	var expected int64
 	fact := Factorial{Value: 25}
-    go fact.ServeRecursive()
+	go fact.ServeRecursive()
 	var channel chan int64
 	channel = make(chan int64)
 	fact.ResultChan = channel
 	res := <-channel
-    expected = 7034535277573963776
+	expected = 7034535277573963776
 	if res != expected {
 		t.Errorf("expected\n%s\n,got:\n%s", expected, res)
 	}
 }
 
-
 func TestIterativeSmallNumber(t *testing.T) {
 
 	fmt.Println("Test Iterative small number (10)")
-    var expected int64
+	var expected int64
 	fact := Factorial{Value: 10}
-    go fact.ServeIterative()
+	go fact.ServeIterative()
 	var channel chan int64
 	channel = make(chan int64)
 	fact.ResultChan = channel
 	res := <-channel
-    expected = 3628800
+	expected = 3628800
 	if res != expected {
 		t.Errorf("expected\n%s\n,got:\n%s", expected, res)
 	}
@@ -57,16 +56,29 @@ func TestIterativeSmallNumber(t *testing.T) {
 func TestIterativeBigNumber(t *testing.T) {
 
 	fmt.Println("Test Iterative big number (25)")
-    var expected int64
+	var expected int64
 	fact := Factorial{Value: 25}
-    go fact.ServeIterative()
+	go fact.ServeIterative()
 	var channel chan int64
 	channel = make(chan int64)
 	fact.ResultChan = channel
 	res := <-channel
-    expected = 7034535277573963776
+	expected = 7034535277573963776
 	if res != expected {
 		t.Errorf("expected\n%s\n,got:\n%s", expected, res)
 	}
 }
 
+func BenchmarkRecursive(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		fact := Factorial{Value: 10}
+		go fact.ServeIterative()
+    }
+}
+
+func BenchmarkIterative(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		fact := Factorial{Value: 10}
+		go fact.ServeIterative()
+    }
+}
