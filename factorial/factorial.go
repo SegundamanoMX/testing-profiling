@@ -10,6 +10,12 @@ type Factorial struct {
 	Value      int64
 }
 
+/*
+* TODO: A factorial using cache
+*/
+func (f *Factorial) ServeCached() {
+}
+
 func (f *Factorial) ServeIterative() {
     f.Result = 1
     for i := f.Value ; i > 0; i = i - 1 {
@@ -26,7 +32,7 @@ func (f *Factorial) ServeRecursive() {
 
 func recursive(val int64) int64 {
 	fmt.Println("val:", val)
-	if val == 1 {
+	if val < 2 {
 		return 1
 	} else {
 		return val * recursive(val-1)

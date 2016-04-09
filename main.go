@@ -2,33 +2,66 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/goris/testing-profiling/factorial"
 	_ "os"
+	"strconv"
 )
+
+var r *gin.Engine
 
 func init() {
 	fmt.Println("Initialize things... ")
+	r = gin.Default()
+	publics := r.Group("api/factorial")
+	publics.GET("/iterative/:id", runFactorialIterative)
+	publics.GET("/recursive/:id", runFactorialRecursive)
 }
 
 func main() {
-	var factorial1 factorial.Factorial
-	var factorial2 factorial.Factorial
-	factorial1.Value = 6
-	factorial2.Value = 6
+	fmt.Println("Running API... ")
+	r.Run()
+}
 
-	go factorial2.ServeRecursive()
-	go factorial1.ServeIterative()
+func runFactorialRecursive(c *gin.Context) {
+	value, err := getContextValue(c)
+	if err != nil {
+		c.JSON(403, gin.H{"Incorrect param": c.Params.ByName("id")})
+	} else {
+		var factorial factorial.Factorial
+		factorial.Value = value
+		go factorial.ServeRecursive()
 
-	var channel1 chan int64
-	var channel2 chan int64
-	channel1 = make(chan int64)
-	channel2 = make(chan int64)
-	factorial1.ResultChan = channel1
-	factorial2.ResultChan = channel2
+		var channel chan int64
+		channel = make(chan int64)
+		factorial.ResultChan = channel
+		res := <-channel
+		fmt.Println("Recursive: ", res)
+		c.JSON(201, gin.H{"Result": res})
+	}
+}
 
-	res1 := <-channel1
-	res2 := <-channel2
+func runFactorialIterative(c *gin.Context) {
+	value, err := getContextValue(c)
+	if err != nil {
+		c.JSON(403, gin.H{"Incorrect param": c.Params.ByName("id")})
+	} else {
+		var factorial factorial.Factorial
+		factorial.Value = value
+		go factorial.ServeIterative()
 
-	fmt.Println("Iterative: ", res1)
-	fmt.Println("Recursive: ", res2)
+		var channel chan int64
+		channel = make(chan int64)
+		factorial.ResultChan = channel
+		res := <-channel
+		fmt.Println("Iterative: ", res)
+		c.JSON(201, gin.H{"Result": res})
+	}
+}
+
+func getContextValue(c *gin.Context) (int64, error) {
+	var value int64
+	str := c.Params.ByName("id")
+	value, err := strconv.ParseInt(str, 10, 64)
+	return value, err
 }
