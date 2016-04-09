@@ -5,80 +5,114 @@ import (
 	"testing"
 )
 
-func TestRecursiveSmallNumber(t *testing.T) {
+func TestRecursive32(t *testing.T) {
 
-	fmt.Println("Test Recursive small number (10)")
+	fmt.Println("Test Recursive 32bits (Input: 20)")
+	var expected int
+	fact := Factorial32{Value: 20, Chan: true, ResultChan: make(chan int)}
+	go fact.ServeRecursive32()
+	res := <-fact.ResultChan
+	expected = 2432902008176640000
+	if res != expected {
+		t.Errorf("expected\n%s\n,got:\n%s", expected, res)
+	}
+}
+
+func TestRecursive64(t *testing.T) {
+
+	fmt.Println("Test Recursive 64bits (Input: 20)")
 	var expected int64
-	fact := Factorial{Value: 10}
+	fact := Factorial{Value: 20, Chan: true, ResultChan: make(chan int64)}
 	go fact.ServeRecursive()
-	var channel chan int64
-	channel = make(chan int64)
-	fact.ResultChan = channel
-	res := <-channel
-	expected = 3628800
+	res := <-fact.ResultChan
+	expected = 2432902008176640000
 	if res != expected {
 		t.Errorf("expected\n%s\n,got:\n%s", expected, res)
 	}
 }
 
-func TestRecursiveBigNumber(t *testing.T) {
+func TestIterative32(t *testing.T) {
 
-	fmt.Println("Test Recursive big number (25)")
-	var expected int64
-	fact := Factorial{Value: 25}
-	go fact.ServeRecursive()
-	var channel chan int64
-	channel = make(chan int64)
-	fact.ResultChan = channel
-	res := <-channel
-	expected = 7034535277573963776
+	fmt.Println("Test Iterative 32bits (Input: 20)")
+	var expected int
+	fact := Factorial32{Value: 20, Chan: true, ResultChan: make(chan int)}
+	go fact.ServeIterative32()
+	res := <-fact.ResultChan
+	expected = 2432902008176640000
 	if res != expected {
 		t.Errorf("expected\n%s\n,got:\n%s", expected, res)
 	}
 }
 
-func TestIterativeSmallNumber(t *testing.T) {
+func TestIterative64(t *testing.T) {
 
-	fmt.Println("Test Iterative small number (10)")
+	fmt.Println("Test Iterative 64bits (Input: 20)")
 	var expected int64
-	fact := Factorial{Value: 10}
+	fact := Factorial{Value: 20, Chan: true, ResultChan: make(chan int64)}
 	go fact.ServeIterative()
-	var channel chan int64
-	channel = make(chan int64)
-	fact.ResultChan = channel
-	res := <-channel
-	expected = 3628800
+	res := <-fact.ResultChan
+	expected = 2432902008176640000
 	if res != expected {
 		t.Errorf("expected\n%s\n,got:\n%s", expected, res)
 	}
 }
 
-func TestIterativeBigNumber(t *testing.T) {
+func BenchmarkRecursive32(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		fact := Factorial32{Value: 20, Chan: false}
+		fact.ServeRecursive32()
+	}
+}
 
-	fmt.Println("Test Iterative big number (25)")
-	var expected int64
-	fact := Factorial{Value: 25}
-	go fact.ServeIterative()
-	var channel chan int64
-	channel = make(chan int64)
-	fact.ResultChan = channel
-	res := <-channel
-	expected = 7034535277573963776
-	if res != expected {
-		t.Errorf("expected\n%s\n,got:\n%s", expected, res)
+func BenchmarkIterative32(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		fact := Factorial32{Value: 20, Chan: false}
+		fact.ServeIterative32()
 	}
 }
 
 func BenchmarkRecursive(b *testing.B) {
+	fact := Factorial{Value: 20, Chan: false}
 	for n := 0; n < b.N; n++ {
-		fact := Factorial{Value: 10}
-		go fact.ServeIterative()
-    }
+		fact.ServeRecursive()
+	}
 }
 
 func BenchmarkIterative(b *testing.B) {
+	fact := Factorial{Value: 20, Chan: false}
 	for n := 0; n < b.N; n++ {
-		fact := Factorial{Value: 10}
+		fact.ServeIterative()
+	}
+}
+
+func BenchmarkRecursive32GoRoutine(b *testing.B) {
+	fact := Factorial32{Value: 20, Chan: true, ResultChan: make(chan int)}
+	for n := 0; n < b.N; n++ {
+		go fact.ServeRecursive32()
+		_ = <-fact.ResultChan
+	}
+}
+
+func BenchmarkIterative32GoRoutine(b *testing.B) {
+	fact := Factorial32{Value: 20, Chan: true, ResultChan: make(chan int)}
+	for n := 0; n < b.N; n++ {
+		go fact.ServeIterative32()
+		_ = <-fact.ResultChan
+	}
+}
+
+func BenchmarkRecursiveGoRoutine(b *testing.B) {
+	fact := Factorial{Value: 20, Chan: true, ResultChan: make(chan int64)}
+	for n := 0; n < b.N; n++ {
+		go fact.ServeRecursive()
+		_ = <-fact.ResultChan
+	}
+}
+
+func BenchmarkIterativeGoRoutine(b *testing.B) {
+	fact := Factorial{Value: 10, Chan: true, ResultChan: make(chan int64)}
+	for n := 0; n < b.N; n++ {
 		go fact.ServeIterative()
-    }
+		_ = <-fact.ResultChan
+	}
 }
