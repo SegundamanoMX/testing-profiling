@@ -14,8 +14,7 @@ func init() {
 	fmt.Println("Initialize things... ")
 	r = gin.Default()
 	publics := r.Group("api/factorial")
-	publics.GET("/iterative/:id", runFactorialIterative)
-	publics.GET("/recursive/:id", runFactorialRecursive)
+	publics.GET("/:method/:id", runFactorial)
 }
 
 func main() {
@@ -23,40 +22,45 @@ func main() {
 	r.Run()
 }
 
-func runFactorialRecursive(c *gin.Context) {
+func runFactorial(c *gin.Context) {
 	value, err := getContextValue(c)
 	if err != nil {
 		c.JSON(403, gin.H{"Incorrect param": c.Params.ByName("id")})
-	} else {
+	}
+
+	method := getMethodType(c)
+	if method != "" {
 		var factorial factorial.Factorial
 		factorial.Value = value
-		go factorial.ServeRecursive()
+		switch method {
+		case "recursive":
+			go factorial.ServeRecursive()
+			break
+		case "iterative":
+			go factorial.ServeIterative()
+			break
+		default:
+			c.JSON(403, gin.H{"Incorrect param": c.Params.ByName("method")})
+			return
+		}
 
 		var channel chan int64
 		channel = make(chan int64)
 		factorial.ResultChan = channel
 		res := <-channel
-		fmt.Println("Recursive: ", res)
+		fmt.Println(method, "=> ", res)
 		c.JSON(201, gin.H{"Result": res})
+	} else {
+		c.JSON(403, gin.H{"Incorrect param": c.Params.ByName("method")})
 	}
 }
 
-func runFactorialIterative(c *gin.Context) {
-	value, err := getContextValue(c)
-	if err != nil {
-		c.JSON(403, gin.H{"Incorrect param": c.Params.ByName("id")})
-	} else {
-		var factorial factorial.Factorial
-		factorial.Value = value
-		go factorial.ServeIterative()
-
-		var channel chan int64
-		channel = make(chan int64)
-		factorial.ResultChan = channel
-		res := <-channel
-		fmt.Println("Iterative: ", res)
-		c.JSON(201, gin.H{"Result": res})
-	}
+func getMethodType(c *gin.Context) string {
+	str := c.Params.ByName("method")
+	/*
+	 * TODO: convert it to lowercase
+	 */
+	return str
 }
 
 func getContextValue(c *gin.Context) (int64, error) {

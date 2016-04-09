@@ -12,15 +12,16 @@ type Factorial struct {
 
 /*
 * TODO: A factorial using cache
-*/
+ */
 func (f *Factorial) ServeCached() {
+
 }
 
 func (f *Factorial) ServeIterative() {
-    f.Result = 1
-    for i := f.Value ; i > 0; i = i - 1 {
+	f.Result = 1
+	for i := f.Value; i > 0; i = i - 1 {
 		fmt.Println("i:", i, " val:", f.Value, " res: ", f.Result)
-        f.Result = f.Result * i
+		f.Result = f.Result * i
 	}
 	f.ResultChan <- f.Result
 }
