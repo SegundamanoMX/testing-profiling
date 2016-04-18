@@ -31,6 +31,9 @@ func runFactorial(c *gin.Context) {
 	method := getMethodType(c)
 	if method != "" {
 		var factorial factorial.Factorial
+		var channel chan int64
+		channel = make(chan int64)
+		factorial.ResultChan = channel
 		factorial.Value = value
 		switch method {
 		case "recursive":
@@ -44,9 +47,6 @@ func runFactorial(c *gin.Context) {
 			return
 		}
 
-		var channel chan int64
-		channel = make(chan int64)
-		factorial.ResultChan = channel
 		res := <-channel
 		fmt.Println(method, "=> ", res)
 		c.JSON(201, gin.H{"Result": res})
