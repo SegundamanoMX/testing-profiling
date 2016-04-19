@@ -30,17 +30,15 @@ func runFactorial(c *gin.Context) {
 
 	method := getMethodType(c)
 	if method != "" {
-		var factorial factorial.Factorial
-		var channel chan int64
-		channel = make(chan int64)
-		factorial.ResultChan = channel
-		factorial.Value = value
+        channel := make(chan int64)
+        fact := factorial.Factorial{Value: value, Chan: true, ResultChan: channel}
+
 		switch method {
 		case "recursive":
-			go factorial.ServeRecursive()
+			go fact.ServeRecursive()
 			break
 		case "iterative":
-			go factorial.ServeIterative()
+			go fact.ServeIterative()
 			break
 		default:
 			c.JSON(403, gin.H{"Incorrect param": c.Params.ByName("method")})
